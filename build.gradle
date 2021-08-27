@@ -1,0 +1,103 @@
+plugins {
+    id "java"
+    id "maven-publish"
+    id "java-gradle-plugin"
+    id "org.bookmc.buildtools" version "0.3.3+build.15"
+}
+
+ext {
+    def env = System.getenv()
+    buildNumber = env.BUILD_NUMBER
+    local = buildNumber == null
+    branch = "git rev-parse --abbrev-ref HEAD".execute().text.trim()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(16)
+    }
+}
+
+group "org.bookmc"
+version "0.1.0${branch != "main" && !branch.isEmpty() ? "-$branch" : ""}+${buildNumber ? "build.$buildNumber" : "local"}"
+
+dependencies {
+    compileOnly gradleApi()
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        url "https://maven.bookmc.org"
+    }
+    maven {
+        url "https://maven.fabricmc.net"
+    }
+    maven {
+        url "https://jitpack.io"
+    }
+}
+
+
+configurations {
+    include
+    implementation.extendsFrom(include)
+}
+
+
+dependencies {
+    compileOnly gradleApi()
+
+    implementation "com.google.guava:guava:30.1.1-jre"
+    compileOnly "me.dreamhopping.pml:PufferfishGradle:3.6.0+build.12"
+}
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
+gradlePlugin {
+    plugins {
+        recaf {
+            id = "org.bookmc.annotation-processor-configuration"
+            implementationClass = "org.bookmc.mixin.MixinAnnotationProcessorConfigurationPlugin"
+        }
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            def env = System.getenv()
+
+            boolean isEnvVarsAvailable = env.containsKey("MAVEN_USER") && env.containsKey("MAVEN_PASSWORD")
+
+            if (isEnvVarsAvailable) {
+                credentials {
+                    username env.get("MAVEN_USER")
+                    password env.get("MAVEN_PASSWORD")
+                }
+            }
+
+            url = local || !isEnvVarsAvailable ? "$buildDir/repository" : "https://maven.bookmc.org/releases/"
+        }
+    }
+
+    publications {
+        //noinspection GroovyAssignabilityCheck
+        mavenJava(MavenPublication) {
+            from components.java
+            pom {
+                name = "book-loader"
+                url = "https://github.com/BookMC/loader"
+
+                developers {
+                    developer {
+                        name = "ChachyDev"
+                    }
+                }
+            }
+        }
+    }
+}
