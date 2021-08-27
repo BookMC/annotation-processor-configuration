@@ -1,7 +1,6 @@
 package org.bookmc.mixin.annotation;
 
 import com.google.common.io.Files;
-import me.dreamhopping.pml.gradle.tasks.map.apply.ApplyMappingsJarTask;
 import me.dreamhopping.pml.gradle.tasks.map.generate.GenerateMappingsTask;
 import org.bookmc.mixin.extension.MixinExtension;
 import org.gradle.api.Project;
@@ -27,7 +26,7 @@ public abstract class AbstractAnnotationProcessor<LanguageTask extends Task> {
 
     /**
      * Since different languages have different ways to pass compiler arguments for the annotation processors
-     * we must abstract it. This allows for support for other languages but we will only officially support Java.
+     * we must abstract it. This allows for support for other languages but we will only officially support Java for now...
      * Feel free to fork this or make a pull request/issue and it may be considered.
      *
      * @param languageTask The abstracted language's compiler task
@@ -37,44 +36,42 @@ public abstract class AbstractAnnotationProcessor<LanguageTask extends Task> {
     public abstract void addArgument(LanguageTask languageTask, String key, String value);
 
     public void configure(Project project, SourceSet sourceSet) {
-        if (sourceSet.getName().startsWith("mc")) {
-            String taskName = "generateMixinMappings" + sourceSet.getName().substring(2);
-            GenerateMappingsTask mappingsTask = (GenerateMappingsTask) project.getTasks().getByName(taskName);
-            task.dependsOn(taskName);
+        String taskName = "generateMixinMappings" + sourceSet.getName().substring(2);
+        GenerateMappingsTask mappingsTask = (GenerateMappingsTask) project.getTasks().getByName(taskName);
+        task.dependsOn(taskName);
 
-            File refMapFile = project.file(task.getTemporaryDir() + "/" + task.getName() + "-refmap.json");
-            File generatedFile = project.file(task.getTemporaryDir() + "/" + task.getName() + "-mappings.json");
+        File refMapFile = project.file(task.getTemporaryDir() + "/" + task.getName() + "-refmap.json");
+        File generatedFile = project.file(task.getTemporaryDir() + "/" + task.getName() + "-mappings.json");
 
-            try {
-                applyCompilerArguments(mappingsTask, refMapFile, generatedFile);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            task.doFirst(task -> {
-                refMapFile.delete();
-                generatedFile.delete();
-            });
-
-            String refmapName = getRefmapName(sourceSet, project);
-
-            File taskSpecificRefMap = new File(refMapFile.getParentFile(), refmapName);
-
-            task.doLast(action -> {
-                taskSpecificRefMap.delete();
-
-                if (refMapFile.exists()) {
-                    taskSpecificRefMap.getParentFile().mkdirs();
-                    try {
-                        Files.copy(refMapFile, taskSpecificRefMap);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-
-            ((AbstractArchiveTask) project.getTasks().getByName(sourceSet.getJarTaskName())).from(taskSpecificRefMap);
+        try {
+            applyCompilerArguments(mappingsTask, refMapFile, generatedFile);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+
+        task.doFirst(task -> {
+            refMapFile.delete();
+            generatedFile.delete();
+        });
+
+        String refmapName = getRefmapName(sourceSet, project);
+
+        File taskSpecificRefMap = new File(refMapFile.getParentFile(), refmapName);
+
+        task.doLast(action -> {
+            taskSpecificRefMap.delete();
+
+            if (refMapFile.exists()) {
+                taskSpecificRefMap.getParentFile().mkdirs();
+                try {
+                    Files.copy(refMapFile, taskSpecificRefMap);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        ((AbstractArchiveTask) project.getTasks().getByName(sourceSet.getJarTaskName())).from(taskSpecificRefMap);
     }
 
     private void applyCompilerArguments(GenerateMappingsTask mappingsTask, File refmapFile, File outputFile) throws IOException {
