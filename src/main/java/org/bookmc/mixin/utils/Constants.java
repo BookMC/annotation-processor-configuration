@@ -10,6 +10,6 @@ public class Constants {
     }
 
     public static class Plugin {
-        public static final String PUFFERFISH_GRADLE_ID = "me.dreamhopping.pml";
+        public static final String PUFFERFISH_GRADLE_ID = "me.dreamhopping.pml.gradle";
     }
 }
