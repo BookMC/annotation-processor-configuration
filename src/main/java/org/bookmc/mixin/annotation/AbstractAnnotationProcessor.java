@@ -1,6 +1,9 @@
 package org.bookmc.mixin.annotation;
 
 import com.google.common.io.Files;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import me.dreamhopping.pml.gradle.tasks.map.generate.GenerateMappingsTask;
 import org.bookmc.mixin.extension.MixinExtension;
 import org.gradle.api.Project;
@@ -8,8 +11,7 @@ import org.gradle.api.Task;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 
 /**
  * The abstracted AnnotationProcessorAPI allows us to provide compiler arguments to the language
@@ -54,7 +56,26 @@ public abstract class AbstractAnnotationProcessor<LanguageTask extends Task> {
             generatedFile.delete();
         });
 
-        String refmapName = getRefmapName(sourceSet, project);
+        String refmap = null;
+
+        for (File resource : sourceSet.getResources().getFiles()) {
+           try (FileInputStream fileInputStream = new FileInputStream(resource)) {
+               try (InputStreamReader reader = new InputStreamReader(fileInputStream)) {
+                   JsonElement jsonElement = JsonParser.parseReader(reader);
+                   if (jsonElement instanceof JsonObject) {
+                       JsonObject obj = jsonElement.getAsJsonObject();
+                       if (obj.has("refmap")) {
+                           refmap = obj.get("refmap").getAsString();
+                           break;
+                       }
+                   }
+               }
+           } catch (IOException e) {
+               e.printStackTrace();
+           }
+        }
+
+        String refmapName = getRefmapName(sourceSet, project, refmap);
 
         File taskSpecificRefMap = new File(refMapFile.getParentFile(), refmapName);
 
@@ -85,10 +106,10 @@ public abstract class AbstractAnnotationProcessor<LanguageTask extends Task> {
         addArgument(task, "defaultObfuscationEnv", "pufferfishgradle");
     }
 
-    private String getRefmapName(SourceSet sourceSet, Project project) {
+    private String getRefmapName(SourceSet sourceSet, Project project, String def) {
         return project.getExtensions()
             .getByType(MixinExtension.class)
             .getRefMapNames()
-            .getOrDefault(sourceSet.getName(), "mixin.refmap.json");
+            .getOrDefault(sourceSet.getName(), def == null ? "mixin.refmap.json" : def);
     }
 }

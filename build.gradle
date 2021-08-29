@@ -19,7 +19,7 @@ java {
 }
 
 group "org.bookmc"
-version "0.1.3${branch != "main" && !branch.isEmpty() ? "-$branch" : ""}+${buildNumber ? "build.$buildNumber" : "local"}"
+version "0.2.0${branch != "main" && !branch.isEmpty() ? "-$branch" : ""}+${buildNumber ? "build.$buildNumber" : "local"}"
 
 dependencies {
     compileOnly gradleApi()
@@ -48,6 +48,7 @@ configurations {
 dependencies {
     compileOnly gradleApi()
 
+    implementation "com.google.code.gson:gson:2.8.8"
     implementation "com.google.guava:guava:30.1.1-jre"
     compileOnly "me.dreamhopping.pml:PufferfishGradle:3.6.0+build.12"
 }
