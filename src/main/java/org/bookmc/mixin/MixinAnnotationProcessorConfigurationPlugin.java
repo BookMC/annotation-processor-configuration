@@ -40,8 +40,7 @@ public class MixinAnnotationProcessorConfigurationPlugin implements Plugin<Proje
                 // It has to be per-sourceset because different sourcesets will obviously have a difference classpath
                 // so this resolves the mixin annotation processor only running on the main source set when in reality
                 // we don't even want it ran on that since there (should) be no Mixin code there...
-                String configuration = sourceSet.getName().replace(".", "") + "AnnotationProcessor";
-                project.getDependencies().add(configuration, "org.bookmc:mixin-obfuscation-service:" + Constants.Dependencies.OBFUSCATION_SERVICE_VERSION);
+                project.getDependencies().add(sourceSet.getAnnotationProcessorConfigurationName(), "org.bookmc:mixin-obfuscation-service:" + Constants.Dependencies.OBFUSCATION_SERVICE_VERSION);
 
                 // In the future this should be further abstracted and would have support for Kotlin etc.
                 // but for now it's just plain old Java...

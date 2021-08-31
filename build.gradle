@@ -2,7 +2,7 @@ plugins {
     id "java"
     id "maven-publish"
     id "java-gradle-plugin"
-    id "org.bookmc.buildtools" version "0.3.3+build.15"
+    id "org.bookmc.buildtools" version "0.3.8+build.29"
 }
 
 ext {
@@ -19,7 +19,7 @@ java {
 }
 
 group "org.bookmc"
-version "0.2.0${branch != "main" && !branch.isEmpty() ? "-$branch" : ""}+${buildNumber ? "build.$buildNumber" : "local"}"
+version "0.2.1${branch != "main" && !branch.isEmpty() ? "-$branch" : ""}+${buildNumber ? "build.$buildNumber" : "local"}"
 
 dependencies {
     compileOnly gradleApi()
@@ -50,7 +50,7 @@ dependencies {
 
     implementation "com.google.code.gson:gson:2.8.8"
     implementation "com.google.guava:guava:30.1.1-jre"
-    compileOnly "me.dreamhopping.pml:PufferfishGradle:3.6.0+build.12"
+    compileOnly "me.dreamhopping.pml:PufferfishGradle:3.11.0+build.21"
 }
 
 java {
