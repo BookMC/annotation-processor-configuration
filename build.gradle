@@ -60,7 +60,7 @@ java {
 
 gradlePlugin {
     plugins {
-        recaf {
+        annotationProcessorConfiguration {
             id = "org.bookmc.annotation-processor-configuration"
             implementationClass = "org.bookmc.mixin.MixinAnnotationProcessorConfigurationPlugin"
         }
