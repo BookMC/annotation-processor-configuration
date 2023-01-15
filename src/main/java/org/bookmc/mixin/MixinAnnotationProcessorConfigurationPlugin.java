@@ -16,9 +16,6 @@ import javax.annotation.Nonnull;
 public class MixinAnnotationProcessorConfigurationPlugin implements Plugin<Project> {
     @Override
     public void apply(@Nonnull Project project) {
-        project.getRepositories()
-            .mavenCentral()
-            .setUrl("https://maven.bookmc.org");
 
         project.getExtensions().add(Constants.Extension.NAME, new MixinExtension());
 
